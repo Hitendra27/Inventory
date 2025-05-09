@@ -24,10 +24,10 @@ class ItemDaoTest {
     @Before
     fun createDb() {
         val context: Context = ApplicationProvider.getApplicationContext()
-        // Using an in-memory database because the information stored here diappears wheh the
+        // Using an in-memory database because the information stored here disappears when the
         // process is killed
         inventoryDatabase = Room.inMemoryDatabaseBuilder(context, InventoryDatabase::class.java)
-        // Allowing main thrad queries, just for testing
+        // Allowing main thread queries, just for testing
             .allowMainThreadQueries()
             .build()
         itemDao = inventoryDatabase.itemDao()
@@ -66,5 +66,17 @@ class ItemDaoTest {
         val allItems = itemDao.getAllItems().first()
         assertEquals(allItems[0], item1)
         assertEquals(allItems[1], item2)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun daoUpdateItems_updateItemsInDB() = runBlocking {
+        addTwoItemsToDb()
+        itemDao.update(Item(1, "Apples", 15.0, 25))
+        itemDao.update(Item(2, "Bananas", 5.0, 50))
+
+        val allItems = itemDao.getAllItems().first()
+        assertEquals(allItems[0], Item(1, "Apples", 15.0, 25))
+        assertEquals(allItems[1], Item(2, "Bananas", 5.0, 50))
     }
 }
