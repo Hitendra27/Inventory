@@ -1,4 +1,5 @@
 import android.content.Context
+import androidx.compose.animation.core.animateSizeAsState
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -89,5 +90,13 @@ class ItemDaoTest {
         itemDao.delete(item2)
         val allItems = itemDao.getAllItems().first()
         assertTrue(allItems.isEmpty())
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun daoGetItem_returnsItemFromDB() = runBlocking {
+        addOneItemToDb()
+        val item = itemDao.getItem(1)
+        assertEquals(item.first(), item1)
     }
 }

@@ -21,13 +21,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.data.ItemsRepository
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 
 /**
  * ViewModel to retrieve and update an item from the [ItemsRepository]'s data source.
  */
 class ItemEditViewModel(
     savedStateHandle: SavedStateHandle,
+    private val itemsRepository: ItemsRepository
 ) : ViewModel() {
 
     /**
@@ -42,5 +48,19 @@ class ItemEditViewModel(
         return with(uiState) {
             name.isNotBlank() && price.isNotBlank() && quantity.isNotBlank()
         }
+    }
+
+    init {
+        viewModelScope.launch {
+            itemUiState = itemsRepository.getItemStream(itemId)
+                .filterNotNull()
+                .first()
+                .toItemUiState(true)
+        }
+    }
+
+    fun updateUiState(itemDetails: ItemDetails) {
+        itemUiState =
+            ItemUiState(itemDetails = itemDetails, isEntryValid = validateInput(itemDetails))
     }
 }
